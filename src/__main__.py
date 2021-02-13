@@ -73,7 +73,7 @@ def main():
         处理文件(video)
 
     if 不马上退出:
-        input('\n所有任务处理完毕，按下回车关闭窗口')
+        input('\n所有任务处理完毕，按下回车结束程序')
 
 def 得到输入文件():
     while True:
