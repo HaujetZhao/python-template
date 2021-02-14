@@ -92,14 +92,14 @@ python -m
 第一种方式是直接运行，会有文字提示引导你：
 
 ```
-> python -m audio_video_resync
+> python -m src
 
 ```
 
 第二种方式是命令行传递参数运行：
 
 ```
-> python -m audio_video_resync -h
+> python -m src -h
 
 ```
 

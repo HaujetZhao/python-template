@@ -125,18 +125,20 @@ if 使用虚拟环境 and not os.path.exists('../pyvenv.cfg'):
     subprocess.run(命令, cwd='..')
 
     print(f'更新 pip')
-    命令 = f'"Scripts/pip" install -i https://pypi.tuna.tsinghua.edu.cn/simple pip -U'
+    命令 = f'"../Scripts/python" -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pip -U'
+    命令参数 = shlex.split(命令)
+    subprocess.run(命令, cwd='..')
+
+    命令 = f'"../Scripts/pip" install -i https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller wheel'
     命令参数 = shlex.split(命令)
     subprocess.run(命令, cwd='..')
 
     print(f'开始在虚拟环境中安装依赖包')
-    命令 = f'"Scripts/pip" install -l https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt'
+    命令 = f'"../Scripts/pip" install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt'
     命令参数 = shlex.split(命令)
     subprocess.run(命令, cwd='..')
 
-    命令 = f'"Scripts/pip" install -l https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller'
-    命令参数 = shlex.split(命令)
-    subprocess.run(命令, cwd='..')
+
 
 ...
 
@@ -155,11 +157,22 @@ if 使用虚拟环境:
                 print(f'正在从虚拟环境复制一份依赖包……')
                 copytree(f'../Lib/site-packages', f'./dist/site-packages')
 
+# 源代码中的依赖文件转移
+源文件夹需要单独移动的文件夹列表 = ['bin', 'pretrained_models']
+for 文件夹 in 源文件夹需要单独移动的文件夹列表:
+    if os.path.exists(f'./dist/{启动器}/{文件夹}'):
+        move(f'./dist/{启动器}/{文件夹}', f'./dist/{文件夹}') if os.path.exists(f'./dist/{启动器}/{文件夹}') else ...
+    else:
+        if not os.path.exists(f'./dist/{文件夹}'):
+            print(f'正在从虚拟源代码文件夹复制二进制依赖包……')
+            copytree(f'../{源码文件夹名}/{文件夹}', f'./dist/{文件夹}') if os.path.exists(f'../{源码文件夹名}/{文件夹}') else ...
+
+
 # 准备临时原文件，将相对导入替换为绝对导入
 临时源文件夹 = './dist/src'
 if os.path.exists(临时源文件夹): rmtree(临时源文件夹)
 排除列表 = [
-    '/bin/**',
+    'bin/**',
     '__init__.py',
     '**/**.pyc',
     '**.ini',
@@ -167,8 +180,9 @@ if os.path.exists(临时源文件夹): rmtree(临时源文件夹)
 ]
 if Path(临时源文件夹).exists(): rmtree(临时源文件夹)
 复制(源码文件夹路径, 临时源文件夹, 过滤规则列表=排除列表)
-正则批量替换文件内容(f'{临时源文件夹}/**.py', r'(^\s*)import\s+\.', r'\1import ')
-正则批量替换文件内容(f'{临时源文件夹}/**.py', r'(^\s*)from\s+\.', r'\1from ')
+正则批量替换文件内容(f'{临时源文件夹}/**.py', r'(^\s*)import\s+\.(?=\w)', r'\1import ')
+正则批量替换文件内容(f'{临时源文件夹}/**.py', r'(^\s*)from\s+\.(?=\w)', r'\1from ')
+正则批量替换文件内容(f'{临时源文件夹}/**.py', r'(^\s*)from\s+\.\s+import', r'import')
 
 # 如果是虚拟环境
 #   如果是分开打包，准备 launcher.py，打包
@@ -250,6 +264,12 @@ if not 源码分开打包:
 # 将依赖包移动到打包目录
 if 源码分开打包:
     move(f'./dist/site-packages', f'./dist/{启动器}/site-packages')
+
+
+# 源代码中的依赖文件转移
+for 文件夹 in 源文件夹需要单独移动的文件夹列表:
+    move(f'./dist/{文件夹}', f'./dist/{启动器}/{文件夹}') if os.path.exists(f'./dist/{文件夹}') else ...
+
 
 # exe 重命名
 exe文件名 = f'_{软件名字}.exe'
